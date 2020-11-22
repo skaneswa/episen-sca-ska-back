@@ -3,6 +3,12 @@ package com.example.demo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +28,29 @@ public class Service {
 	@ResponseBody
 	public void add_order(@RequestParam(value = "name", required = true) String name) {
 		try {
-			FileWriter file = new FileWriter("orders.txt");
-			file.write(name);
-			file.close();
+			Path path = Paths.get("orders.txt");
+			if(!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+				 File f = new File("orders.txt");
+				 f.createNewFile();
+			}
+			Files.write(Paths.get("orders.txt"), (name + "\n").getBytes(), StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@GetMapping(value = "/get/order")
+	public List<String> getOrder() {
+		Path path = Paths.get("orders.txt");
+		if(Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+			try {
+				return Files.readAllLines(Paths.get("orders.txt"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+
 	}
 
 }
